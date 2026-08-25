@@ -1,49 +1,32 @@
-# Software Requirements (V1.0)
+## Vinter
 
-- Low cost scheduler(cronjobs)
+**Build. Explain. Contribute. Earn.**
 
-- repo webhooks
+Vinter is an open-source engineering environment designed to bridge the gap between learning to code and shipping professional software. Instead of disconnected assignments, Vinter provides a continuous path from building independent projects to earning compensation on real client work.
 
-- database to store logs, webhooks
+### The Vinter Paradigm
 
-- Data dashboard
+| Traditional Path | The Vinter Path |
+| --- | --- |
+| Tutorials → Assignments → Portfolio → Job Applications | Build → Explain → Contribute → Prove → Earn |
 
-- add personal api token with admin:repo access in ui
+### Progression Roadmap
 
-- create webhooks if not avaliable
+- **Level 1: Foundation (Current MVP):** Build predefined projects from scratch, connect your GitHub, and defend your technical decisions to an AI Mentor.
+- **Level 2: Open Source:** Competent builders transition to contributing to live Vinter and open-source codebases via real issues and pull requests.
+- **Level 3: Client Work:** Proven contributors participate in paid, scoped client projects managed entirely through Vinter's engineering process.
 
-- display avaliable repos in graph and table
+### Foundation MVP Mechanics
 
-## Pain points
+- **Project Briefs:** Clear business contexts, constraints, and acceptance criteria.
+- **Native Workflow:** Build using your preferred tools and AI assistants; Vinter simply hooks into your GitHub API to analyze commits and code.
+- **AI Mentor Agent:** Acts as a senior engineer conducting a repository-grounded review, asking specific questions about your architecture, edge cases, and trade-offs.
+- **Foundation Proof:** A verifiable evidence record proving you built the project, met the requirements, and truly understand the implementation.
 
-- At 42, feedbacks, your score is stored but not the commit log or your whole development process so you can't see your thought processes like a map (not true tho)
-- In 42, it's fixed curriculum everyone follows the same path.
-- One thing is it's not a primarily community for industry talks.
-- in university, assignments are submitted but each week feels like a seperate items, after exams, you forget all and can't trace your learning history.
+### Core Philosophy
 
-## Main idea
+- **Embrace AI, Own the Result:** AI coding assistants are welcome, but the developer must thoroughly understand, verify, and take responsibility for the final code.
+- **Depth Over Quantity:** Understanding system behavior, trade-offs, and failure modes matters more than shipping dozens of shallow portfolio projects.
+- **Real Work is the Ultimate Assessment:** Competency is best proven by consistently executing real-world engineering tasks.
 
-- main idea is to keep track of learning / building logs
-- in github, each commit has meaning but it's difficult to visualize the whole devlopment so let's track.
-
-## Authentication Layer
-
-- via oauth
-- store in cookies and cache
-- and api secret
-- add returned **Authorization callback URL/ redirect urls**
-
-## The answer is 42
-
-- What if one user login with two devices at the same time
-- What if login but never return callback url
-- what if login fails
-
-## ## Definitive MVP Feature Matrix
-
-| Feature Module | Core Mechanics | Target Goal |
-| --- | --- | --- |
-| RepoScanner Agent | Webhooks from github repo and | With repo's link, fetch commits, PRs and code changes summary and interpret the project timeline, change logs. |
-| Mentor Agent (Your Supervisor) | Scheduled runner for scanning the progress and storing feedbacks | With data from RepoScanner, update/add in Feedback database. |
-| QA Tester Agent (SQM Manager) | Schedule testing once the project is summitted. (One-time testing, not stage by stage yet) | Check if the project meets software requirement defined by the company. |
-| Progress/ Build Plan Agent (Name - HR) | Check the progress database, celebrate achievement or plan next projects | Define student's learning milestones, upsert learning progress |
+---
