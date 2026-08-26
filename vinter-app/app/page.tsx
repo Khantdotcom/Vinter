@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +23,7 @@ export default function HomePage() {
             <Link href="/home">
               <Button variant="secondary">Dashboard</Button>
             </Link>
-            <a href="/api/auth/github">
-              <Button>Continue with GitHub</Button>
-            </a>
+            <Button onClick={() => signIn("github", { callbackUrl: "/home" })}>Continue with GitHub</Button>
           </div>
         </header>
 
