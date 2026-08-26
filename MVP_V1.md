@@ -79,7 +79,8 @@ User
       │    └── MentorMessage
       ├── Assessment
       │    └── AssessmentEvidence (Links to commits, files, PRs, Q&A)
-      └── Proof
+      └── Proof (Assessment results)
+      |__ UserMessage
 ```
 
 ---

@@ -1,0 +1,234 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String?       @unique
+  username      String
+  githubUsername String?
+  githubId      String?       @unique
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  userProjects  UserProject[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id                 String        @id @default(cuid())
+  code               String        @unique
+  title              String
+  category           String
+  difficulty         String
+  description        String
+  estimatedScope     String
+  businessContext    String
+  role               String
+  requirements       Json
+  constraints        Json
+  acceptanceCriteria Json
+  competencies       Json
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  userProjects       UserProject[]
+}
+
+model UserProject {
+  id             String       @id @default(cuid())
+  userId         String
+  projectId      String
+  status         ProjectStatus @default(NOT_STARTED)
+  progress       Int           @default(0)
+  repositoryId   String?
+  mentorSessionId String?
+  assessmentId   String?
+  proofId        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  repository     Repository?
+  mentorSessions MentorSession[]
+  assessments   Assessment[]
+  proof          Proof?
+
+  @@unique([userId, projectId])
+}
+
+model Repository {
+  id              String              @id @default(cuid())
+  userProjectId   String              @unique
+  githubId        String
+  name            String
+  owner           String
+  url             String
+  visibility      String
+  defaultBranch   String
+  status          RepositoryStatus    @default(CONNECTED)
+  updatedAt       DateTime            @default(now())
+  userProject     UserProject         @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  snapshots       RepositorySnapshot[]
+  commits         Commit[]
+  pullRequests    PullRequest[]
+}
+
+model RepositorySnapshot {
+  id            String   @id @default(cuid())
+  repositoryId  String
+  commitSha     String
+  branch        String
+  fetchedAt     DateTime @default(now())
+  repository    Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+}
+
+model Commit {
+  id           String    @id @default(cuid())
+  repositoryId String
+  sha          String
+  message      String
+  authoredAt   DateTime
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+}
+
+model PullRequest {
+  id           String    @id @default(cuid())
+  repositoryId String
+  number       Int
+  title        String
+  state        String
+  createdAt    DateTime
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+}
+
+model MentorSession {
+  id           String          @id @default(cuid())
+  userProjectId String
+  status       MentorSessionStatus @default(ACTIVE)
+  questionNumber Int            @default(1)
+  maxQuestions Int            @default(4)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  userProject  UserProject     @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  messages     MentorMessage[]
+}
+
+model MentorMessage {
+  id            String        @id @default(cuid())
+  sessionId     String
+  role          String
+  content       String
+  createdAt     DateTime      @default(now())
+  session       MentorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id           String          @id @default(cuid())
+  userProjectId String
+  status       AssessmentStatus @default(PENDING)
+  result       String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  userProject  UserProject     @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  evidence     AssessmentEvidence[]
+}
+
+model AssessmentEvidence {
+  id            String     @id @default(cuid())
+  assessmentId  String
+  competency    String
+  sourceType    String
+  sourceRef     String?
+  question      String?
+  answer        String?
+  assessmentText String
+  createdAt     DateTime   @default(now())
+  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
+
+model Proof {
+  id             String      @id @default(cuid())
+  userProjectId  String      @unique
+  result         String
+  publicId       String      @unique @default(cuid())
+  generatedAt    DateTime    @default(now())
+  competencies   Json
+  verifiedThrough Json
+  userProject    UserProject @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+}
+
+enum ProjectStatus {
+  NOT_STARTED
+  ACTIVE
+  REPOSITORY_CONNECTED
+  READY_FOR_SUBMISSION
+  SUBMITTED
+  MENTOR_REVIEWING
+  MENTOR_SESSION
+  ASSESSING
+  PROOF_READY
+  COMPLETED
+  PROCESSING
+  FAILED
+  RETRY
+}
+
+enum RepositoryStatus {
+  CONNECTED
+  SYNCING
+  READY
+  FAILED
+}
+
+enum MentorSessionStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+}
+
+enum AssessmentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
