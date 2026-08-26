@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
 import GitHub from "next-auth/providers/github";
 
 const githubEnabled = Boolean(process.env.GITHUB_ID && process.env.GITHUB_SECRET);
@@ -8,8 +8,8 @@ const fallbackHandlers = {
   POST: async () => Response.redirect(`${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/`),
 };
 
-const authHandler = githubEnabled
-  ? NextAuth({
+export const authOptions: NextAuthOptions | undefined = githubEnabled
+  ? {
       session: {
         strategy: "jwt",
       },
@@ -38,16 +38,23 @@ const authHandler = githubEnabled
           return session;
         },
       },
-    })
+    }
   : undefined;
 
-export const handlers = authHandler
+export const handlers = authOptions
   ? {
-      GET: authHandler,
-      POST: authHandler,
+      GET: NextAuth(authOptions),
+      POST: NextAuth(authOptions),
     }
   : fallbackHandlers;
 
-export const auth = async () => null;
+export const auth = async () => {
+  if (!authOptions) {
+    return null;
+  }
+
+  return getServerSession(authOptions);
+};
+
 export const signIn = async () => null;
 export const signOut = async () => null;
