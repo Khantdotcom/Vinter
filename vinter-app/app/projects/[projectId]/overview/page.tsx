@@ -1,0 +1,101 @@
+import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { ArrowLeft, Check, GitBranch } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { authOptions } from "@/lib/auth";
+import { normalizeProject, prisma } from "@/lib/prisma";
+
+export default async function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = await params;
+  const session = authOptions ? await getServerSession(authOptions) : null;
+  const userId = (session?.user as any)?.id;
+
+  const [project, activeUserProject] = await Promise.all([
+    prisma.project.findUnique({ where: { id: projectId } }),
+    userId
+      ? prisma.userProject.findFirst({
+          where: { userId: userId, projectId },
+        })
+      : null,
+  ]);
+
+  if (!project) {
+    return (
+      <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
+        <div className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-8 text-center shadow-sm">
+          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Workspace</p>
+          <h1 className="mt-3 text-2xl font-semibold">Project not found</h1>
+        </div>
+      </main>
+    );
+  }
+
+  const normalizedProject = normalizeProject(project);
+  const progress = activeUserProject?.projectId === projectId ? activeUserProject.progress ?? 0 : 0;
+  const requirements = normalizedProject.requirements ?? [];
+
+  return (
+    <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Workspace</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">{normalizedProject.title}</h1>
+          </div>
+          <Link href={`/projects/${projectId}`}>
+            <Button variant="outline" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to brief
+            </Button>
+          </Link>
+        </header>
+
+        <Card className="border-neutral-200 bg-white">
+          <CardHeader className="pb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>{normalizedProject.category}</Badge>
+              <Badge variant="secondary">{normalizedProject.role}</Badge>
+              <Badge variant="success">ACTIVE</Badge>
+            </div>
+            <CardTitle className="mt-2 text-2xl">Project overview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <div className="mb-2 flex items-center justify-between text-sm text-neutral-600">
+                <span>Progress</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                <div className="h-full rounded-full bg-neutral-900" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-neutral-200 p-5">
+              <h2 className="text-base font-semibold">Requirements checklist</h2>
+              <ul className="mt-4 space-y-3">
+                {requirements.map((requirement: string) => (
+                  <li key={requirement} className="flex items-center gap-3 rounded border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
+                    <span className="flex h-5 w-5 items-center justify-center rounded border border-neutral-300 bg-white">
+                      <Check className="h-3.5 w-3.5 text-neutral-900" />
+                    </span>
+                    <span>{requirement}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" disabled className="gap-2 opacity-60">
+                <GitBranch className="h-4 w-4" />
+                Connect GitHub Repository
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
+  );
+}
