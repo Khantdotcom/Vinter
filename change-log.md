@@ -68,3 +68,13 @@
 - Updated the landing page GitHub button in [vinter-app/app/page.tsx](vinter-app/app/page.tsx) to be a client component and call `signIn("github", { callbackUrl: "/home" })` directly using `next-auth/react`.
 - This addresses the immediate CSRF/client-side invocation issue that was redirecting to `/?error=github` before the OAuth exchange could complete.
 - Verified the fix with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
+
+### Repository connection and project submission UI
+
+- Created [vinter-app/components/ConnectRepository.tsx](vinter-app/components/ConnectRepository.tsx), a client component that fetches the user's GitHub repos from `GET /api/github/repositories`, renders a dropdown, and POSTs the selected repo to `POST /api/user-projects/[userProjectId]/repository`. Calls `router.refresh()` on success to sync server state.
+- Created [vinter-app/components/SubmitProjectButton.tsx](vinter-app/components/SubmitProjectButton.tsx), a client component that POSTs to `POST /api/user-projects/[userProjectId]/submissions` and calls `router.refresh()` on success.
+- Updated [vinter-app/app/projects/[projectId]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx) to query the linked `Repository` via Prisma `include`, read `userProject.status`, and render conditionally:
+  - `ACTIVE`: renders `<ConnectRepository>`
+  - `REPOSITORY_CONNECTED`: shows connected repo name and URL, renders `<SubmitProjectButton>`
+  - `SUBMITTED` and post-submit states: locked "Under Review" panel with repo link
+- Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
