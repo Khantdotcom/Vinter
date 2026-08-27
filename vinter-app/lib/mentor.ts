@@ -3,7 +3,7 @@ import { google } from "@ai-sdk/google";
 
 import { prisma, normalizeProject } from "@/lib/prisma";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.6-flash";
 const MAX_USER_TURNS = 4;
 
 // ─── generateMentorReview ───────────────────────────────────────────────────

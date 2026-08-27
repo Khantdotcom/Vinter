@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { ArrowLeft, Check, GitBranch, Lock } from "lucide-react";
+import { ArrowLeft, Check, GitBranch, Lock, MessageSquare } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { authOptions } from "@/lib/auth";
 import { normalizeProject, prisma } from "@/lib/prisma";
 import ConnectRepository from "@/components/ConnectRepository";
 import SubmitProjectButton from "@/components/SubmitProjectButton";
+import StartMentorReviewButton from "@/components/StartMentorReviewButton";
 
 export default async function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -44,6 +45,15 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
 
   const SUBMITTED_STATES = new Set(["SUBMITTED", "UNDER_REVIEW", "ASSESSED", "COMPLETED"]);
   const isSubmitted = SUBMITTED_STATES.has(status);
+
+  // Resolve active mentor session id for MENTOR_SESSION status
+  const activeMentorSession =
+    status === "MENTOR_SESSION" && activeUserProject
+      ? await prisma.mentorSession.findFirst({
+          where: { userProjectId: activeUserProject.id, status: "ACTIVE" },
+          orderBy: { createdAt: "desc" },
+        })
+      : null;
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
@@ -102,25 +112,61 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                 <h2 className="text-base font-semibold">Repository</h2>
               </div>
 
-              {isSubmitted ? (
-                <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
-                  <Lock className="h-4 w-4 text-neutral-500" />
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900">Under Review</p>
-                    {repository && (
-                      <a
-                        href={repository.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-neutral-500 underline-offset-2 hover:underline"
-                      >
-                        {repository.owner}/{repository.name}
-                      </a>
-                    )}
-                    <p className="mt-0.5 text-xs text-neutral-500">
-                      Repository snapshot captured. Awaiting mentor assessment.
-                    </p>
+              {status === "MENTOR_SESSION" ? (
+                <div className="space-y-4">
+                  {repository && (
+                    <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+                      <Lock className="h-4 w-4 text-neutral-500" />
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">Snapshot locked</p>
+                        <a
+                          href={repository.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                        >
+                          {repository.owner}/{repository.name}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-neutral-500" />
+                    <h2 className="text-base font-semibold">Mentor session active</h2>
                   </div>
+                  {activeMentorSession ? (
+                    <Link href={`/mentor-sessions/${activeMentorSession.id}`}>
+                      <Button className="gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        Continue Mentor Session
+                      </Button>
+                    </Link>
+                  ) : (
+                    activeUserProject && <StartMentorReviewButton userProjectId={activeUserProject.id} />
+                  )}
+                </div>
+              ) : isSubmitted ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+                    <Lock className="h-4 w-4 text-neutral-500" />
+                    <div>
+                      <p className="text-sm font-medium text-neutral-900">Under Review</p>
+                      {repository && (
+                        <a
+                          href={repository.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                        >
+                          {repository.owner}/{repository.name}
+                        </a>
+                      )}
+                      <p className="mt-0.5 text-xs text-neutral-500">
+                        Repository snapshot captured. Awaiting mentor assessment.
+                      </p>
+                    </div>
+                  </div>
+                  {activeUserProject && <StartMentorReviewButton userProjectId={activeUserProject.id} />}
                 </div>
               ) : status === "REPOSITORY_CONNECTED" && repository ? (
                 <div className="space-y-4">
