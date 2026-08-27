@@ -1,12 +1,18 @@
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { CheckCircle, ExternalLink, GitCommit, GitBranch, Shield } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 
 // Publicly accessible — no auth required
-export default async function ProofPage({ params }: { params: Promise<{ publicId: string }> }) {
-  const { publicId } = await params;
+export default function ProofPage({ params }: { params: Promise<{ publicId: string }> }) {
+  const resolvedParams = use(params);
+
+  return <ProofPageContent publicId={resolvedParams.publicId} />;
+}
+
+async function ProofPageContent({ publicId }: { publicId: string }) {
 
   const proof = await prisma.proof.findUnique({
     where: { publicId },

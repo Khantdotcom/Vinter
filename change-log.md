@@ -2,6 +2,18 @@
 
 ## 2026-08-27
 
+### Production prep: Next.js dynamic params and Supabase readiness
+
+- Updated dynamic route pages to resolve promise-based params with React `use()` for Next.js 15+ compatibility:
+  - [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx)
+  - [vinter-app/app/projects/\[projectId\]/page.tsx](vinter-app/app/projects/%5BprojectId%5D/page.tsx)
+  - [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx)
+  - [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx)
+  - [vinter-app/app/proofs/\[publicId\]/page.tsx](vinter-app/app/proofs/%5BpublicId%5D/page.tsx)
+- For server-rendered pages, introduced small wrapper components that call `use(params)` and pass resolved IDs into async content components.
+- Updated [vinter-app/prisma/schema.prisma](vinter-app/prisma/schema.prisma) datasource provider from `sqlite` to `postgresql` for Supabase.
+- Updated [vinter-app/package.json](vinter-app/package.json) build script to `prisma generate && next build` so Prisma Client is generated during Vercel builds.
+
 ### Assessment trigger UI and public Proof of Competence page
 
 - Updated [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx):

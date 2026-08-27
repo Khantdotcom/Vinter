@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default function UserProjectOverviewPage({ params }: { params: { id: string } }) {
+export default function UserProjectOverviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [userProject, setUserProject] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`/api/user-projects/${params.id}`)
+    fetch(`/api/user-projects/${resolvedParams.id}`)
       .then((res) => res.json())
       .then((payload) => setUserProject(payload.data));
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   if (!userProject) {
     return <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">Loading project...</main>;

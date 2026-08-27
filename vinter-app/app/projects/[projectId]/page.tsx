@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { use } from "react";
 import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { normalizeProject, prisma } from "@/lib/prisma";
 import StartProjectButton from "./start-project-button";
 
-export default async function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const { projectId } = await params;
+export default function ProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const resolvedParams = use(params);
+
+  return <ProjectDetailPageContent projectId={resolvedParams.projectId} />;
+}
+
+async function ProjectDetailPageContent({ projectId }: { projectId: string }) {
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   const normalizedProject = project ? normalizeProject(project) : null;
 

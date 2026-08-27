@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { use } from "react";
 import { getServerSession } from "next-auth";
 import { ArrowLeft, GitBranch } from "lucide-react";
 
@@ -8,8 +9,13 @@ import { authOptions } from "@/lib/auth";
 import { normalizeProject, prisma } from "@/lib/prisma";
 import MentorChat from "@/components/MentorChat";
 
-export default async function MentorSessionPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: sessionId } = await params;
+export default function MentorSessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+
+  return <MentorSessionPageContent sessionId={resolvedParams.id} />;
+}
+
+async function MentorSessionPageContent({ sessionId }: { sessionId: string }) {
   const authSession = authOptions ? await getServerSession(authOptions) : null;
 
   const mentorSession = await prisma.mentorSession.findUnique({

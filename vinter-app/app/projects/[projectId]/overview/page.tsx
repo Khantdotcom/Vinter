@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { use } from "react";
 import { getServerSession } from "next-auth";
 import { ArrowLeft, Check, GitBranch, Lock, MessageSquare } from "lucide-react";
 
@@ -11,8 +12,13 @@ import ConnectRepository from "@/components/ConnectRepository";
 import SubmitProjectButton from "@/components/SubmitProjectButton";
 import StartMentorReviewButton from "@/components/StartMentorReviewButton";
 
-export default async function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
-  const { projectId } = await params;
+export default function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const resolvedParams = use(params);
+
+  return <ProjectOverviewPageContent projectId={resolvedParams.projectId} />;
+}
+
+async function ProjectOverviewPageContent({ projectId }: { projectId: string }) {
   const session = authOptions ? await getServerSession(authOptions) : null;
   const userId = (session?.user as any)?.id;
 
