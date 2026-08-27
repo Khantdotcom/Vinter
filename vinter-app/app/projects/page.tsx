@@ -11,51 +11,51 @@ export default async function ProjectsPage() {
   const normalizedProjects = projects.map(normalizeProject);
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center justify-between gap-4">
+    <main className="text-neutral-900 dark:text-neutral-100">
+      <div className="space-y-8">
+        <header className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Projects</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Projects</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Choose a brief</h1>
           </div>
           <Link href="/home">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 border-neutral-300 dark:border-neutral-800 dark:text-neutral-100">
               Home
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 text-[#5CD4DF] dark:text-[#7DE8F2]" />
             </Button>
           </Link>
         </header>
 
         {normalizedProjects.length === 0 ? (
-          <Card className="border-neutral-200 bg-white">
+          <Card className="border border-neutral-300 bg-white dark:border-neutral-800 dark:bg-neutral-950">
             <CardHeader>
               <CardTitle className="text-2xl">Ready to build something real?</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-neutral-600">
+              <p className="text-sm text-neutral-600 dark:text-neutral-300">
                 New project briefs are on the way. Check back soon and we will get you into your next challenge.
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {normalizedProjects.map((project: any) => (
+            {normalizedProjects.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`} className="group block h-full">
-                <Card className="h-full border-neutral-200 bg-white transition-colors duration-150 group-hover:border-neutral-300 group-hover:shadow-sm">
+                <Card className="h-full border border-neutral-300 bg-white transition-colors duration-150 group-hover:border-[#5CD4DF] dark:border-neutral-800 dark:bg-neutral-950 dark:group-hover:border-[#7DE8F2]">
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{project.category}</p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">{project.category}</p>
                         <CardTitle className="mt-2 text-2xl leading-tight">{project.title}</CardTitle>
                       </div>
                       <Badge variant="secondary">{project.difficulty}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-sm leading-6 text-neutral-600">{project.description}</p>
-                    <div className="flex items-center justify-between border-t border-neutral-200 pt-4 text-xs uppercase tracking-[0.2em] text-neutral-500">
-                      <span>Open</span>
-                      <ArrowRight className="h-4 w-4" />
+                    <p className="text-sm leading-6 text-neutral-600 dark:text-neutral-300">{project.description}</p>
+                    <div className="flex items-center justify-between border-t border-neutral-300 pt-4 text-xs uppercase tracking-[0.2em] text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+                      <span className="text-[#5CD4DF] dark:text-[#7DE8F2]">Open</span>
+                      <ArrowRight className="h-4 w-4 text-[#5CD4DF] dark:text-[#7DE8F2]" />
                     </div>
                   </CardContent>
                 </Card>

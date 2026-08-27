@@ -35,6 +35,34 @@
   - emphasized cryptographic evidence panel (`Verified Through: GitHub Repository & Commit SHA`) using a distinct dark-gray, monospace block.
 - Updated user-facing empty-state copy in key UI surfaces to a more human, user-centered tone (for example "Ready to build something real?") across [vinter-app/app/home/page.tsx](vinter-app/app/home/page.tsx), [vinter-app/app/projects/page.tsx](vinter-app/app/projects/page.tsx), [vinter-app/components/ConnectRepository.tsx](vinter-app/components/ConnectRepository.tsx), [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx), [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx), and [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx).
 
+### Foundational theme switching and layout system
+
+- Installed and wired `next-themes` for functional light/dark/system switching.
+- Added [vinter-app/components/ThemeProvider.tsx](vinter-app/components/ThemeProvider.tsx) and wrapped the app tree in [vinter-app/app/layout.tsx](vinter-app/app/layout.tsx) using class-based theming (`attribute="class"`, `defaultTheme="system"`, `enableSystem`).
+- Added [vinter-app/components/ThemeToggle.tsx](vinter-app/components/ThemeToggle.tsx) with Sun/Moon icons and click-to-cycle behavior (`light` -> `dark` -> `system`).
+- Added persistent [vinter-app/components/Navbar.tsx](vinter-app/components/Navbar.tsx) with:
+  - `Vinter` wordmark using Capriola (`font-brand`)
+  - theme toggle control
+  - auth/avatar placeholder.
+- Updated [vinter-app/app/layout.tsx](vinter-app/app/layout.tsx) to:
+  - include the persistent navbar
+  - apply structural container defaults for all pages (`max-w-5xl`, consistent `px/py`)
+  - enforce root readability tokens (`bg-[#EFEFEF] dark:bg-[#000000]`, `text-neutral-900 dark:text-neutral-100`).
+- Updated [vinter-app/app/globals.css](vinter-app/app/globals.css) to support class-driven dark mode with `@custom-variant dark (&:where(.dark, .dark *));` and tokenized background/foreground mappings.
+- Updated [vinter-app/tailwind.config.ts](vinter-app/tailwind.config.ts) to use `darkMode: "class"` while preserving brand colors.
+- Extended shared UI primitives for cross-page consistency:
+  - [vinter-app/components/ui/button.tsx](vinter-app/components/ui/button.tsx)
+  - [vinter-app/components/ui/card.tsx](vinter-app/components/ui/card.tsx)
+  - [vinter-app/components/ui/badge.tsx](vinter-app/components/ui/badge.tsx)
+  with functional dark-mode classes, subtle borders, and brand cyan accent behavior.
+- Applied structural dark-mode readability across remaining primary pages:
+  - [vinter-app/app/page.tsx](vinter-app/app/page.tsx)
+  - [vinter-app/app/projects/\[projectId\]/page.tsx](vinter-app/app/projects/%5BprojectId%5D/page.tsx)
+  - [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx)
+  - [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx)
+  - [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx).
+- Verified with targeted lint on the updated pages/components and all checks passed.
+
 ### AI mentor persona hardening
 
 - Updated prompt contracts in [vinter-app/lib/mentor.ts](vinter-app/lib/mentor.ts) to enforce the official mentor persona:

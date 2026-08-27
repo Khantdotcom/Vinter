@@ -14,6 +14,7 @@ Vinter is implemented as a Next.js App Router application in `vinter-app` with a
 - Validation/schema typing for AI output: Zod (`zod`).
 
 Build pipeline note:
+
 - `package.json` build script runs `prisma generate && next build` to ensure Prisma Client generation in deployment builds.
 
 ## 2. Backend Architecture & Data Model
@@ -23,10 +24,12 @@ Build pipeline note:
 The backend is implemented in App Router route handlers under `vinter-app/app/api`.
 
 Two API styles currently coexist:
+
 - Production data routes backed by Prisma + auth + GitHub API.
 - Legacy/stub routes backed by `lib/domain.ts` mock data.
 
 Prisma-backed core routes include:
+
 - `POST /api/projects/[projectId]/start`
 - `GET /api/home`
 - `GET /api/github/repositories`
@@ -37,6 +40,7 @@ Prisma-backed core routes include:
 - `POST /api/user-projects/[id]/assessments`
 
 Legacy/stub routes still using `lib/domain.ts` include examples such as:
+
 - `GET /api/profile`
 - `GET /api/jobs/[jobId]`
 - `POST /api/repositories/[id]/sync`
@@ -62,23 +66,27 @@ Primary entities in `prisma/schema.prisma`:
 The code uses explicit Prisma transactions to enforce atomic lifecycle transitions:
 
 - Mentor session creation (`POST /api/mentor-sessions`):
+
   - create `MentorSession`
   - create opening `MentorMessage`
   - update `UserProject.status` to `MENTOR_SESSION`
   - all in a single `prisma.$transaction`.
 
 - Mentor reply persistence (`POST /api/mentor-sessions/[id]/messages`):
+
   - create mentor reply message
   - conditionally set `MentorSession.status = COMPLETED`
   - wrapped in `prisma.$transaction` when final turn closes.
 
 - Final assessment (`POST /api/user-projects/[id]/assessments`):
+
   - create `Assessment` and nested `AssessmentEvidence`
   - conditionally create `Proof` when passed
   - update `UserProject.status = COMPLETED`
   - all in one `prisma.$transaction`.
 
 Non-transactional but ordered transitions:
+
 - `POST /api/user-projects/[id]/repository`: upsert `Repository`, then set `UserProject.status = REPOSITORY_CONNECTED`.
 - `POST /api/user-projects/[id]/submissions`: create `RepositorySnapshot`, then set `UserProject.status = SUBMITTED`.
 
@@ -95,16 +103,19 @@ Non-transactional but ordered transitions:
 `lib/mentor.ts` defines two generation pipelines:
 
 - `generateMentorReview(userProjectId)`:
+
   - Loads project + repo/snapshot context.
   - Uses `generateText` with Gemini `gemini-3.6-flash`.
   - Produces opening context + one focused question.
 
 - `generateMentorResponse(sessionId, userMessage)`:
+
   - Rehydrates full session message history from DB.
   - Computes turn index from persisted user messages.
   - Uses `generateText` with a system prompt encoding strict turn constraints.
 
 Prompt constraints implemented in code:
+
 - Hard cap of 4 user turns (`MAX_USER_TURNS = 4`).
 - Final turn instruction requires response to begin with `SESSION_COMPLETE:`.
 - Runtime completion detection: `sessionComplete = isLastTurn && text.includes("SESSION_COMPLETE:")`.
@@ -125,6 +136,7 @@ This structured output is directly persisted by the assessment route as normaliz
 ### 3.3 Persona and pedagogy rules
 
 The mentor prompt is explicitly configured for:
+
 - Voice: helpful, progressive, human, user-centered, Gen-Z-esque (casual but professional).
 - Role: supportive manager in a Virtual Internship.
 - Teaching style: Feynman technique + exploratory learning through guided reasoning/trade-offs.
@@ -134,18 +146,21 @@ The mentor prompt is explicitly configured for:
 ### 4.1 Typography
 
 Global typography is configured in `app/layout.tsx` and `app/globals.css`:
+
 - Inter: weights 400/600 as default body sans font (`--font-inter`).
 - Capriola: weight 400 for brand/headings (`--font-capriola`, applied through heading selectors and `.font-brand`).
 
 ### 4.2 Brand color tokens
 
 Brand colors are defined in `tailwind.config.ts` and mirrored as CSS variables in `app/globals.css`:
+
 - `vinter-cyan-light`: `#5CD4DF`
 - `vinter-cyan-dark`: `#7DE8F2`
 - `vinter-bg-dark`: `#000000`
 - `vinter-bg-light`: `#EFEFEF`
 
 Theme behavior:
+
 - Light mode background: `#EFEFEF`.
 - Dark mode background: `#000000`.
 - `@theme inline` maps tokens for Tailwind utility usage.
@@ -153,6 +168,7 @@ Theme behavior:
 ### 4.3 Proof page presentation system
 
 `app/proofs/[publicId]/page.tsx` is a public certificate renderer with:
+
 - Centered premium card layout.
 - Deep black canvas + cyan glow gradients.
 - Capriola branding for "Foundation Proof" and project title.
@@ -175,6 +191,7 @@ The primary lifecycle is modeled through `UserProject.status` transitions:
 6. `COMPLETED` (and optional `Proof` record with public page)
 
 Observed transitions from route handlers:
+
 - Start project: `NOT_STARTED -> ACTIVE` via `POST /api/projects/[projectId]/start`.
 - Connect repo: `ACTIVE -> REPOSITORY_CONNECTED` via `POST /api/user-projects/[id]/repository`.
 - Submit snapshot: `REPOSITORY_CONNECTED -> SUBMITTED` via `POST /api/user-projects/[id]/submissions`.
@@ -182,6 +199,7 @@ Observed transitions from route handlers:
 - Finalize assessment: `MENTOR_SESSION -> COMPLETED` via `POST /api/user-projects/[id]/assessments`.
 
 Supporting UI logic:
+
 - `projects/[projectId]/overview` branches rendering based on status (`ACTIVE`, `REPOSITORY_CONNECTED`, submitted/review states, `MENTOR_SESSION`).
 - Mentor chat enforces turn completion and triggers assessment generation at session end.
 - Proof page is accessible by `publicId` when a passing assessment creates a `Proof`.

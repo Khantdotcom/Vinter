@@ -20,7 +20,8 @@ export default function ProjectOverviewPage({ params }: { params: Promise<{ proj
 
 async function ProjectOverviewPageContent({ projectId }: { projectId: string }) {
   const session = authOptions ? await getServerSession(authOptions) : null;
-  const userId = (session?.user as any)?.id;
+  const sessionUser = session?.user as { id?: string } | undefined;
+  const userId = sessionUser?.id;
 
   const [project, activeUserProject] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId } }),
@@ -34,9 +35,9 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
 
   if (!project) {
     return (
-      <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
-        <div className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-8 text-center shadow-sm">
-          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Workspace</p>
+      <main className="text-neutral-900 dark:text-neutral-100">
+        <div className="rounded-lg border border-neutral-300 bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+          <p className="text-sm uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Workspace</p>
           <h1 className="mt-3 text-2xl font-semibold">Project not found</h1>
         </div>
       </main>
@@ -62,11 +63,11 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
       : null;
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
-      <div className="mx-auto max-w-5xl">
+    <main className="text-neutral-900 dark:text-neutral-100">
+      <div className="space-y-8">
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Workspace</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">Workspace</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">{normalizedProject.title}</h1>
           </div>
           <Link href={`/projects/${projectId}`}>
@@ -77,7 +78,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
           </Link>
         </header>
 
-        <Card className="border-neutral-200 bg-white">
+        <Card className="border border-neutral-300 bg-white dark:border-neutral-800 dark:bg-neutral-950">
           <CardHeader className="pb-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{normalizedProject.category}</Badge>
@@ -88,22 +89,22 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <div className="mb-2 flex items-center justify-between text-sm text-neutral-600">
+              <div className="mb-2 flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-300">
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
-                <div className="h-full rounded-full bg-neutral-900" style={{ width: `${progress}%` }} />
+              <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+                <div className="h-full rounded-full bg-[#5CD4DF] dark:bg-[#7DE8F2]" style={{ width: `${progress}%` }} />
               </div>
             </div>
 
-            <div className="rounded-lg border border-neutral-200 p-5">
+            <div className="rounded-lg border border-neutral-300 p-5 dark:border-neutral-800">
               <h2 className="text-base font-semibold">Requirements checklist</h2>
               <ul className="mt-4 space-y-3">
                 {requirements.map((requirement: string) => (
-                  <li key={requirement} className="flex items-center gap-3 rounded border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
-                    <span className="flex h-5 w-5 items-center justify-center rounded border border-neutral-300 bg-white">
-                      <Check className="h-3.5 w-3.5 text-neutral-900" />
+                  <li key={requirement} className="flex items-center gap-3 rounded border border-neutral-300 bg-neutral-50 p-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                    <span className="flex h-5 w-5 items-center justify-center rounded border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-950">
+                      <Check className="h-3.5 w-3.5 text-[#5CD4DF] dark:text-[#7DE8F2]" />
                     </span>
                     <span>{requirement}</span>
                   </li>
@@ -112,24 +113,24 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
             </div>
 
             {/* Repository / submission section */}
-            <div className="rounded-lg border border-neutral-200 p-5">
+            <div className="rounded-lg border border-neutral-300 p-5 dark:border-neutral-800">
               <div className="mb-4 flex items-center gap-2">
-                <GitBranch className="h-4 w-4 text-neutral-500" />
+                <GitBranch className="h-4 w-4 text-[#5CD4DF] dark:text-[#7DE8F2]" />
                 <h2 className="text-base font-semibold">Repository</h2>
               </div>
 
               {status === "MENTOR_SESSION" ? (
                 <div className="space-y-4">
                   {repository && (
-                    <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
-                      <Lock className="h-4 w-4 text-neutral-500" />
+                    <div className="flex items-center gap-3 rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+                      <Lock className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">Snapshot locked</p>
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Snapshot locked</p>
                         <a
                           href={repository.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                          className="text-xs text-[#5CD4DF] underline-offset-2 hover:underline dark:text-[#7DE8F2]"
                         >
                           {repository.owner}/{repository.name}
                         </a>
@@ -137,7 +138,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-neutral-500" />
+                    <MessageSquare className="h-4 w-4 text-[#5CD4DF] dark:text-[#7DE8F2]" />
                     <h2 className="text-base font-semibold">Mentor session active</h2>
                   </div>
                   {activeMentorSession ? (
@@ -153,21 +154,21 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                 </div>
               ) : isSubmitted ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
-                    <Lock className="h-4 w-4 text-neutral-500" />
+                  <div className="flex items-center gap-3 rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+                    <Lock className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                     <div>
-                      <p className="text-sm font-medium text-neutral-900">Under Review</p>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Under Review</p>
                       {repository && (
                         <a
                           href={repository.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                          className="text-xs text-[#5CD4DF] underline-offset-2 hover:underline dark:text-[#7DE8F2]"
                         >
                           {repository.owner}/{repository.name}
                         </a>
                       )}
-                      <p className="mt-0.5 text-xs text-neutral-500">
+                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                         Repository snapshot captured. Awaiting mentor assessment.
                       </p>
                     </div>
@@ -176,18 +177,18 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                 </div>
               ) : status === "REPOSITORY_CONNECTED" && repository ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
-                    <GitBranch className="h-4 w-4 text-neutral-500" />
+                  <div className="flex items-center gap-3 rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
+                    <GitBranch className="h-4 w-4 text-[#5CD4DF] dark:text-[#7DE8F2]" />
                     <div>
                       <a
                         href={repository.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-neutral-900 underline-offset-2 hover:underline"
+                        className="text-sm font-medium text-neutral-900 underline-offset-2 hover:underline dark:text-neutral-100"
                       >
                         {repository.owner}/{repository.name}
                       </a>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         {repository.visibility?.toLowerCase()} · {repository.defaultBranch}
                       </p>
                     </div>
@@ -200,7 +201,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                 activeUserProject ? (
                   <ConnectRepository userProjectId={activeUserProject.id} />
                 ) : (
-                  <p className="text-sm text-neutral-500">Ready to build something real? Start this project first, then connect your repository.</p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">Ready to build something real? Start this project first, then connect your repository.</p>
                 )
               )}
             </div>

@@ -12,11 +12,11 @@ export default function HomePage() {
   const projects = listProjects();
 
   return (
-    <main className="min-h-screen bg-neutral-50 text-neutral-900">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <header className="mb-10 flex items-center justify-between gap-4 border-b border-neutral-200 pb-6">
+    <main className="text-neutral-900 dark:text-neutral-100">
+      <div className="space-y-10">
+        <header className="flex items-center justify-between gap-4 border-b border-neutral-300 pb-6 dark:border-neutral-800">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.22em] text-neutral-500">Vinter</p>
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-400">Vinter</p>
             <h1 className="mt-2 text-2xl font-semibold">Build. Explain. Contribute. Earn.</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <section className="mb-10 grid gap-4 md:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>
               <Badge variant="secondary">Foundation Level</Badge>
@@ -60,7 +60,7 @@ export default function HomePage() {
         <section>
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Available projects</h2>
-            <p className="text-sm text-neutral-500">Predefined MVP briefs</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Predefined MVP briefs</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

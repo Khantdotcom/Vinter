@@ -30,6 +30,7 @@ Vinter is an open-source engineering environment designed to bridge the gap betw
 - **Real Work is the Ultimate Assessment:** Competency is best proven by consistently executing real-world engineering tasks.
 
 ---
+
 ### 1. Product Vision & North Star
 
 **Vision:** Vinter is an open-source community and talent pipeline that transitions learners from building practice software to delivering paid client work. **Core Progression:** Build → Contribute → Prove → Earn → Take Ownership **North Star Metric:** The volume of real software successfully shipped by contributors who progressed through Vinter's system.
