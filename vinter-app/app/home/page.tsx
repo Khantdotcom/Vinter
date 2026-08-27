@@ -82,11 +82,11 @@ export default async function HomePage() {
                 <FolderOpen className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.2em] text-neutral-500">Start a build</span>
               </div>
-              <CardTitle className="mt-2 text-2xl">Choose your next project</CardTitle>
+              <CardTitle className="mt-2 text-2xl">Ready to build something real?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <p className="max-w-xl text-sm leading-6 text-neutral-600">
-                Pick a brief, review the requirements, and start building with a focused, minimal workflow.
+                Pick a brief, explore the requirements, and start shipping your next proof of skill step by step.
               </p>
               <Button asChild className="w-full sm:w-auto">
                 <Link href="/projects">

@@ -26,30 +26,43 @@ export default async function ProjectsPage() {
           </Link>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {normalizedProjects.map((project: any) => (
-            <Link key={project.id} href={`/projects/${project.id}`} className="group block h-full">
-              <Card className="h-full border-neutral-200 bg-white transition-colors duration-150 group-hover:border-neutral-300 group-hover:shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{project.category}</p>
-                      <CardTitle className="mt-2 text-2xl leading-tight">{project.title}</CardTitle>
+        {normalizedProjects.length === 0 ? (
+          <Card className="border-neutral-200 bg-white">
+            <CardHeader>
+              <CardTitle className="text-2xl">Ready to build something real?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-neutral-600">
+                New project briefs are on the way. Check back soon and we will get you into your next challenge.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {normalizedProjects.map((project: any) => (
+              <Link key={project.id} href={`/projects/${project.id}`} className="group block h-full">
+                <Card className="h-full border-neutral-200 bg-white transition-colors duration-150 group-hover:border-neutral-300 group-hover:shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{project.category}</p>
+                        <CardTitle className="mt-2 text-2xl leading-tight">{project.title}</CardTitle>
+                      </div>
+                      <Badge variant="secondary">{project.difficulty}</Badge>
                     </div>
-                    <Badge variant="secondary">{project.difficulty}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm leading-6 text-neutral-600">{project.description}</p>
-                  <div className="flex items-center justify-between border-t border-neutral-200 pt-4 text-xs uppercase tracking-[0.2em] text-neutral-500">
-                    <span>Open</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm leading-6 text-neutral-600">{project.description}</p>
+                    <div className="flex items-center justify-between border-t border-neutral-200 pt-4 text-xs uppercase tracking-[0.2em] text-neutral-500">
+                      <span>Open</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

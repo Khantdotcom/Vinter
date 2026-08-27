@@ -23,7 +23,7 @@ async function ProjectDetailPageContent({ projectId }: { projectId: string }) {
       <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
         <div className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Project brief</p>
-          <h1 className="mt-3 text-2xl font-semibold">Project not found</h1>
+          <h1 className="mt-3 text-2xl font-semibold">This project brief is unavailable right now.</h1>
           <Link href="/projects" className="mt-6 inline-flex">
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="h-4 w-4" />

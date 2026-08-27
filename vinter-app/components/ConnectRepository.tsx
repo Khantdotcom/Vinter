@@ -95,7 +95,7 @@ export default function ConnectRepository({ userProjectId }: Props) {
 
   if (repos.length === 0 && !error) {
     return (
-      <p className="text-sm text-neutral-500">No GitHub repositories found.</p>
+      <p className="text-sm text-neutral-500">We could not find repos yet. Push your project to GitHub and come back to connect it.</p>
     );
   }
 

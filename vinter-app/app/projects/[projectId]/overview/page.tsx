@@ -200,7 +200,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                 activeUserProject ? (
                   <ConnectRepository userProjectId={activeUserProject.id} />
                 ) : (
-                  <p className="text-sm text-neutral-500">Start the project to connect a repository.</p>
+                  <p className="text-sm text-neutral-500">Ready to build something real? Start this project first, then connect your repository.</p>
                 )
               )}
             </div>

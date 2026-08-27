@@ -16,7 +16,7 @@ export default function UserProjectOverviewPage({ params }: { params: Promise<{ 
   }, [resolvedParams.id]);
 
   if (!userProject) {
-    return <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">Loading project...</main>;
+    return <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">Getting your project workspace ready...</main>;
   }
 
   return (
@@ -84,7 +84,7 @@ export default function UserProjectOverviewPage({ params }: { params: Promise<{ 
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-600">No repository connected yet.</p>
+                  <p className="text-sm text-neutral-600">No repository connected yet. Connect one and let’s keep your momentum going.</p>
                   <Button onClick={() => fetch(`/api/repositories/repo_123/sync`, { method: "POST" })}>Sync repository</Button>
                 </div>
               )}

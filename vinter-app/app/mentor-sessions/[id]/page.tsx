@@ -38,7 +38,7 @@ async function MentorSessionPageContent({ sessionId }: { sessionId: string }) {
       <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
         <div className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Mentor session</p>
-          <h1 className="mt-3 text-2xl font-semibold">Session not found</h1>
+          <h1 className="mt-3 text-2xl font-semibold">We could not find that mentor session.</h1>
         </div>
       </main>
     );
@@ -124,7 +124,7 @@ async function MentorSessionPageContent({ sessionId }: { sessionId: string }) {
               </div>
             ) : (
               <div className="rounded-lg border border-neutral-200 bg-white p-5">
-                <p className="text-sm text-neutral-500">No repository connected.</p>
+                <p className="text-sm text-neutral-500">No repository connected yet. Link one to unlock deeper code-level feedback.</p>
               </div>
             )}
           </aside>
