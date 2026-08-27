@@ -14,6 +14,42 @@
 - Updated [vinter-app/prisma/schema.prisma](vinter-app/prisma/schema.prisma) datasource provider from `sqlite` to `postgresql` for Supabase.
 - Updated [vinter-app/package.json](vinter-app/package.json) build script to `prisma generate && next build` so Prisma Client is generated during Vercel builds.
 
+### Brand system and UX voice rollout
+
+- Added official brand typography in [vinter-app/app/layout.tsx](vinter-app/app/layout.tsx):
+  - `Inter` (weights `400`, `600`) as the default body font.
+  - `Capriola` (weight `400`) as the heading/brand font token.
+- Added the Tailwind brand palette in [vinter-app/tailwind.config.ts](vinter-app/tailwind.config.ts):
+  - `vinter-cyan-light: #5CD4DF`
+  - `vinter-cyan-dark: #7DE8F2`
+  - `vinter-bg-dark: #000000`
+  - `vinter-bg-light: #EFEFEF`
+- Updated [vinter-app/app/globals.css](vinter-app/app/globals.css) theme variables:
+  - light mode background now uses `#EFEFEF`
+  - dark mode background now uses `#000000`
+  - Tailwind inline theme maps these tokens for reusable utilities.
+- Polished [vinter-app/app/proofs/\[publicId\]/page.tsx](vinter-app/app/proofs/%5BpublicId%5D/page.tsx) into a premium digital certificate layout:
+  - centered card presentation on deep black canvas
+  - cyan glow accents and subtle cyan borders/checkmarks
+  - Capriola usage for `Foundation Proof` header and project title
+  - emphasized cryptographic evidence panel (`Verified Through: GitHub Repository & Commit SHA`) using a distinct dark-gray, monospace block.
+- Updated user-facing empty-state copy in key UI surfaces to a more human, user-centered tone (for example "Ready to build something real?") across [vinter-app/app/home/page.tsx](vinter-app/app/home/page.tsx), [vinter-app/app/projects/page.tsx](vinter-app/app/projects/page.tsx), [vinter-app/components/ConnectRepository.tsx](vinter-app/components/ConnectRepository.tsx), [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx), [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx), and [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx).
+
+### AI mentor persona hardening
+
+- Updated prompt contracts in [vinter-app/lib/mentor.ts](vinter-app/lib/mentor.ts) to enforce the official mentor persona:
+  - voice: helpful, progressive, human, user-centered, and Gen-Z-esque (casual but professional)
+  - role: supportive manager in a Virtual Internship
+  - teaching style: Feynman technique with exploratory, trade-off-first coaching.
+- Preserved strict session controls in the same prompt flow:
+  - hard stop at 4 user turns
+  - mandatory `SESSION_COMPLETE:` prefix on the final turn.
+
+### Seed catalog audit
+
+- Audited [vinter-app/prisma/seed.ts](vinter-app/prisma/seed.ts): the current seed script still provisions only the `Authentication API` foundation project.
+- `Product Catalog API`, `GitHub Repository Explorer`, and `RAG Document Assistant` are not present in the current seed source and therefore were not logged as implemented catalog additions.
+
 ### Assessment trigger UI and public Proof of Competence page
 
 - Updated [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx):
@@ -135,7 +171,7 @@
 
 - Installed `ai` and `@ai-sdk/google` packages.
 - Created [vinter-app/lib/mentor.ts](vinter-app/lib/mentor.ts) with two service functions:
-  - `generateMentorReview(userProjectId)`: fetches the project brief and locked repository snapshot from Prisma, prompts `gemini-2.5-flash` to produce an opening technical analysis and a single focused question for the candidate.
+  - `generateMentorReview(userProjectId)`: fetches the project brief and locked repository snapshot from Prisma, prompts `gemini-3.6-flash` to produce an opening technical analysis and a single focused question for the candidate.
   - `generateMentorResponse(sessionId, userMessage)`: loads the full conversation history from `MentorMessage` records, tracks user turn count, enforces a hard stop after 4 user turns by instructing the model to close with a `SESSION_COMPLETE:` summary on the final turn, and returns `{ text, sessionComplete }`.
 - Created [vinter-app/app/api/mentor-sessions/route.ts](vinter-app/app/api/mentor-sessions/route.ts) (`POST`): requires auth and `userProjectId`, calls `generateMentorReview`, creates the `MentorSession` and opening `MentorMessage`, and updates `UserProject.status` to `"MENTOR_SESSION"` — all in a single Prisma transaction.
 - Replaced the stubbed [vinter-app/app/api/mentor-sessions/\[id\]/messages/route.ts](vinter-app/app/api/mentor-sessions/%5Bid%5D/messages/route.ts) (`POST`) with a live implementation: saves the user message, calls `generateMentorResponse`, saves the AI reply, and atomically marks the session `"COMPLETED"` when `sessionComplete` is true.
