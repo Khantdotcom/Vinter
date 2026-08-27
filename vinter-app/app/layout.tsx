@@ -29,7 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       >
         <ThemeProvider>
           <Navbar />
-          <div className="mx-auto w-full max-w-5xl px-4 py-8">{children}</div>
+          <main className="mx-auto w-full max-w-6xl p-4 md:p-8">{children}</main>
         </ThemeProvider>
       </body>
     </html>

@@ -7,6 +7,7 @@ Vinter is implemented as a Next.js App Router application in `vinter-app` with a
 - Runtime framework: Next.js `16.3.3` (App Router). The codebase is already aligned to the Next.js 15+ params-as-promise model by resolving dynamic route params with `use(params)` in route pages.
 - Language/runtime: TypeScript + React 19.
 - Styling: Tailwind CSS v4 with global CSS variables and custom brand tokens.
+- Theme runtime: `next-themes` with class-based light/dark/system switching.
 - Auth: NextAuth v4 (`next-auth@4.24.15`) with GitHub OAuth provider and JWT-based sessions.
 - Data access: Prisma ORM (`@prisma/client@5.22.0`) with datasource provider set to `postgresql` in `prisma/schema.prisma`.
 - Database target: PostgreSQL (intended for Supabase deployment).
@@ -31,13 +32,14 @@ Two API styles currently coexist:
 Prisma-backed core routes include:
 
 - `POST /api/projects/[projectId]/start`
-- `GET /api/home`
 - `GET /api/github/repositories`
 - `POST /api/user-projects/[id]/repository`
 - `POST /api/user-projects/[id]/submissions`
 - `POST /api/mentor-sessions`
 - `POST /api/mentor-sessions/[id]/messages`
 - `POST /api/user-projects/[id]/assessments`
+
+Additional authenticated/read routes remain available, including `GET /api/home` and proof retrieval flows.
 
 Legacy/stub routes still using `lib/domain.ts` include examples such as:
 
@@ -150,6 +152,15 @@ Global typography is configured in `app/layout.tsx` and `app/globals.css`:
 - Inter: weights 400/600 as default body sans font (`--font-inter`).
 - Capriola: weight 400 for brand/headings (`--font-capriola`, applied through heading selectors and `.font-brand`).
 
+### 4.1.1 App shell
+
+The app uses a persistent navigation shell rendered in `app/layout.tsx`:
+
+- Sticky, glass-like navbar (`bg-white/80 dark:bg-black/80` + `backdrop-blur-md`).
+- Left navigation: Vinter wordmark link + Projects + Proofs links.
+- Right controls: theme toggle and auth controls (login / sign out + avatar initial).
+- Shared page container: `max-w-6xl` with responsive padding for consistent layout rhythm.
+
 ### 4.2 Brand color tokens
 
 Brand colors are defined in `tailwind.config.ts` and mirrored as CSS variables in `app/globals.css`:
@@ -179,6 +190,13 @@ Theme behavior:
 
 Recent UI copy shifts in key screens use warmer, user-centered language (for example "Ready to build something real?") across project discovery and repository connection states.
 
+### 4.5 Route consolidation
+
+The legacy `/home` page has been removed. The root route `/` is now the single smart entrypoint:
+
+- If unauthenticated, `/` renders a landing experience with login CTA.
+- If authenticated, `/` renders the dashboard/workspace view.
+
 ## 5. Core User Flow (State Machine)
 
 The primary lifecycle is modeled through `UserProject.status` transitions:
@@ -189,6 +207,10 @@ The primary lifecycle is modeled through `UserProject.status` transitions:
 4. `SUBMITTED`
 5. `MENTOR_SESSION`
 6. `COMPLETED` (and optional `Proof` record with public page)
+
+Entry routing behavior:
+
+- `/` decides between LandingView and DashboardView based on `getServerSession(authOptions)`.
 
 Observed transitions from route handlers:
 
@@ -203,6 +225,7 @@ Supporting UI logic:
 - `projects/[projectId]/overview` branches rendering based on status (`ACTIVE`, `REPOSITORY_CONNECTED`, submitted/review states, `MENTOR_SESSION`).
 - Mentor chat enforces turn completion and triggers assessment generation at session end.
 - Proof page is accessible by `publicId` when a passing assessment creates a `Proof`.
+- Proof index route (`/proofs`) lists authenticated user proofs and links to `/proofs/[publicId]`.
 
 ### State diagram
 
@@ -223,3 +246,4 @@ stateDiagram-v2
 - The codebase is mid-transition from mock-domain endpoints (`lib/domain.ts`) to full Prisma-backed endpoints.
 - `prisma/seed.ts` currently seeds only one foundation project (`Authentication API`). The additional catalog items (Product Catalog API, GitHub Repository Explorer, RAG Document Assistant) are not present in current seed code.
 - Some older changelog entries still mention SQLite-era details; current schema provider is PostgreSQL.
+- Historical docs/changelog entries may still reference `/home`; current canonical entry route is `/`.

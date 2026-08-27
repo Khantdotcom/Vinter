@@ -63,6 +63,23 @@
   - [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx).
 - Verified with targeted lint on the updated pages/components and all checks passed.
 
+### Smart route consolidation and glass app shell
+
+- Consolidated routes by removing [vinter-app/app/home/page.tsx](vinter-app/app/home/page.tsx) and using `/` as the single smart entrypoint.
+- Reworked [vinter-app/app/page.tsx](vinter-app/app/page.tsx) into an async server component:
+  - unauthenticated users see a landing view (`Build. Explain. Prove.` + login CTA)
+  - authenticated users see a dashboard workspace view.
+- Added [vinter-app/components/LoginButton.tsx](vinter-app/components/LoginButton.tsx) and [vinter-app/components/SignOutButton.tsx](vinter-app/components/SignOutButton.tsx) for explicit auth controls.
+- Upgraded [vinter-app/components/Navbar.tsx](vinter-app/components/Navbar.tsx) to a persistent sticky glass shell:
+  - `sticky top-0 z-50` with `bg-white/80 dark:bg-black/80` and `backdrop-blur-md`
+  - left nav links for `/`, `/projects`, and `/proofs`
+  - right side theme toggle + profile/sign-out state.
+- Updated [vinter-app/app/layout.tsx](vinter-app/app/layout.tsx) container structure to `max-w-6xl` with `p-4 md:p-8` for consistent workspace framing.
+- Added [vinter-app/app/proofs/page.tsx](vinter-app/app/proofs/page.tsx) to provide a valid proofs index route and avoid broken navigation.
+- Updated `/home` links/redirect targets to `/` across touched pages (including landing/dashboard CTA paths and project navigation).
+- Applied kinetic-card hover treatment and brand-cyan primary action styling to dashboard/project card surfaces in [vinter-app/app/page.tsx](vinter-app/app/page.tsx) and [vinter-app/app/projects/page.tsx](vinter-app/app/projects/page.tsx).
+- Verified with targeted lint on all modified consolidation files.
+
 ### AI mentor persona hardening
 
 - Updated prompt contracts in [vinter-app/lib/mentor.ts](vinter-app/lib/mentor.ts) to enforce the official mentor persona:
