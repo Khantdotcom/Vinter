@@ -128,6 +128,7 @@ export default async function MentorSessionPage({ params }: { params: Promise<{ 
             <h2 className="mb-4 text-base font-semibold">Conversation</h2>
             <MentorChat
               sessionId={sessionId}
+              userProjectId={userProjectId}
               initialMessages={initialMessages}
               isCompleted={isCompleted}
             />

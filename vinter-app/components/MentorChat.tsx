@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Lock, Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle, Loader2, Lock, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -13,17 +14,46 @@ type Message = {
 
 type Props = {
   sessionId: string;
+  userProjectId: string;
   initialMessages: Message[];
   isCompleted: boolean;
 };
 
-export default function MentorChat({ sessionId, initialMessages, isCompleted: initiallyCompleted }: Props) {
+export default function MentorChat({ sessionId, userProjectId, initialMessages, isCompleted: initiallyCompleted }: Props) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [error, setError] = useState<string | null>(null);
+  const [assessing, setAssessing] = useState(false);
+  const [assessError, setAssessError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  async function handleGenerateAssessment() {
+    setAssessing(true);
+    setAssessError(null);
+    try {
+      const res = await fetch(`/api/user-projects/${userProjectId}/assessments`, {
+        method: "POST",
+      });
+      const payload = await res.json();
+      if (!res.ok || payload.error) {
+        setAssessError(payload.error?.message ?? "Assessment failed. Please try again.");
+        return;
+      }
+      const { passed, proofPublicId } = payload.data;
+      if (passed && proofPublicId) {
+        router.push(`/proofs/${proofPublicId}`);
+      } else {
+        router.push(`/user-projects/${userProjectId}`);
+      }
+    } catch {
+      setAssessError("Assessment failed. Please try again.");
+    } finally {
+      setAssessing(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -117,12 +147,34 @@ export default function MentorChat({ sessionId, initialMessages, isCompleted: in
 
       {/* Input or locked state */}
       {completed ? (
-        <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
-          <Lock className="h-4 w-4 shrink-0 text-neutral-400" />
-          <div>
-            <p className="text-sm font-medium text-neutral-900">Review Complete</p>
-            <p className="text-xs text-neutral-500">The mentor session has ended. Your responses have been recorded.</p>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+            <Lock className="h-4 w-4 shrink-0 text-neutral-400" />
+            <div>
+              <p className="text-sm font-medium text-neutral-900">Review Complete</p>
+              <p className="text-xs text-neutral-500">The mentor session has ended. Your responses have been recorded.</p>
+            </div>
           </div>
+          {assessError && (
+            <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{assessError}</p>
+          )}
+          <Button
+            onClick={handleGenerateAssessment}
+            disabled={assessing}
+            className="w-full gap-2"
+          >
+            {assessing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating Assessment…
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                Generate Final Assessment
+              </>
+            )}
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex gap-2 border-t border-neutral-200 pt-4">

@@ -2,6 +2,27 @@
 
 ## 2026-08-27
 
+### Assessment trigger UI and public Proof of Competence page
+
+- Updated [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx):
+  - Added `userProjectId: string` prop.
+  - Replaced the static "Review Complete" locked state with an actionable "Generate Final Assessment" button.
+  - Button POSTs to `POST /api/user-projects/[userProjectId]/assessments` and shows a `Loader2` spinner during the AI round-trip.
+  - On success: if `passed && proofPublicId`, routes to `/proofs/[proofPublicId]`; otherwise routes back to the user-project overview.
+  - Assessment errors are displayed inline without disrupting the conversation view.
+- Updated [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx) to pass the new `userProjectId` prop to `<MentorChat>`.
+- Created [vinter-app/app/proofs/\[publicId\]/page.tsx](vinter-app/app/proofs/%5BpublicId%5D/page.tsx) — a public server component (no auth required):
+  - Fetches `Proof` by `publicId` from Prisma, including `userProject.user`, `userProject.project`, and `userProject.repository.snapshots`.
+  - Parses `proof.competencies` and `proof.verifiedThrough` from SQLite-serialised JSON strings back into typed objects.
+  - Renders a dark "Certificate of Competence" UI with:
+    - Emerald shield icon and gradient accent bar.
+    - Recipient name (falls back through `name` → `githubUsername` → `email`).
+    - Project title, role, difficulty, and category badges.
+    - Verified competency list with `CheckCircle` icons.
+    - "Verified Through" panel with a linked repository name and a linked commit SHA pointing to the exact `github.com/.../commit/SHA` URL.
+    - Issue date and public proof ID in the footer.
+- Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`; `/proofs/[publicId]` confirmed in the route table.
+
 ### Final Assessment and Proof Generation (Phase 5)
 
 - Created [vinter-app/lib/assessment.ts](vinter-app/lib/assessment.ts) with a `generateFinalAssessment(userProjectId)` service:
