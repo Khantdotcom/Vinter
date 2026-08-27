@@ -1,5 +1,24 @@
 # Change Log
 
+## 2026-08-27
+
+### Final Assessment and Proof Generation (Phase 5)
+
+- Created [vinter-app/lib/assessment.ts](vinter-app/lib/assessment.ts) with a `generateFinalAssessment(userProjectId)` service:
+  - Defines a Zod schema enforcing a structured response: `summary` (string), `passed` (boolean), and `evidences` (array of `{ competency, question, answer, note }`).
+  - Fetches `UserProject` with `Project`, latest `RepositorySnapshot`, and most-recent `MentorSession.messages` directly from Prisma.
+  - Builds a prompt including project title, role, required competencies, repo/snapshot context, and the full conversation transcript.
+  - Calls `generateObject` from the Vercel AI SDK with the Zod schema to force a validated structured JSON response from `gemini-3.6-flash`.
+- Created [vinter-app/app/api/user-projects/\[id\]/assessments/route.ts](vinter-app/app/api/user-projects/%5Bid%5D/assessments/route.ts) (`POST /api/user-projects/:id/assessments`):
+  - Authenticates via `auth()` and verifies the requesting user owns the `UserProject`.
+  - Calls `generateFinalAssessment(userProjectId)` to obtain the structured AI result.
+  - Executes a single Prisma transaction:
+    - Creates an `Assessment` record (`status: "COMPLETED"`, `summary`) with nested `AssessmentEvidence` rows for each extracted competency.
+    - If `passed` is true, creates a `Proof` record using `crypto.randomUUID()` for `publicId`; serialises `competencies` and `verifiedThrough` (snapshot details) as `JSON.stringify` strings per the SQLite schema requirement.
+    - Updates `UserProject.status` to `"COMPLETED"`.
+  - Returns `{ data: { passed, proofPublicId, assessmentId }, error: null }`.
+- Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
+
 ## 2026-08-26
 
 ### Auth integration fix
@@ -73,7 +92,7 @@
 
 - Created [vinter-app/components/ConnectRepository.tsx](vinter-app/components/ConnectRepository.tsx), a client component that fetches the user's GitHub repos from `GET /api/github/repositories`, renders a dropdown, and POSTs the selected repo to `POST /api/user-projects/[userProjectId]/repository`. Calls `router.refresh()` on success to sync server state.
 - Created [vinter-app/components/SubmitProjectButton.tsx](vinter-app/components/SubmitProjectButton.tsx), a client component that POSTs to `POST /api/user-projects/[userProjectId]/submissions` and calls `router.refresh()` on success.
-- Updated [vinter-app/app/projects/[projectId]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx) to query the linked `Repository` via Prisma `include`, read `userProject.status`, and render conditionally:
+- Updated [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx) to query the linked `Repository` via Prisma `include`, read `userProject.status`, and render conditionally:
   - `ACTIVE`: renders `<ConnectRepository>`
   - `REPOSITORY_CONNECTED`: shows connected repo name and URL, renders `<SubmitProjectButton>`
   - `SUBMITTED` and post-submit states: locked "Under Review" panel with repo link
@@ -86,5 +105,22 @@
   - `generateMentorReview(userProjectId)`: fetches the project brief and locked repository snapshot from Prisma, prompts `gemini-2.5-flash` to produce an opening technical analysis and a single focused question for the candidate.
   - `generateMentorResponse(sessionId, userMessage)`: loads the full conversation history from `MentorMessage` records, tracks user turn count, enforces a hard stop after 4 user turns by instructing the model to close with a `SESSION_COMPLETE:` summary on the final turn, and returns `{ text, sessionComplete }`.
 - Created [vinter-app/app/api/mentor-sessions/route.ts](vinter-app/app/api/mentor-sessions/route.ts) (`POST`): requires auth and `userProjectId`, calls `generateMentorReview`, creates the `MentorSession` and opening `MentorMessage`, and updates `UserProject.status` to `"MENTOR_SESSION"` — all in a single Prisma transaction.
-- Replaced the stubbed [vinter-app/app/api/mentor-sessions/[id]/messages/route.ts](vinter-app/app/api/mentor-sessions/%5Bid%5D/messages/route.ts) (`POST`) with a live implementation: saves the user message, calls `generateMentorResponse`, saves the AI reply, and atomically marks the session `"COMPLETED"` when `sessionComplete` is true.
+- Replaced the stubbed [vinter-app/app/api/mentor-sessions/\[id\]/messages/route.ts](vinter-app/app/api/mentor-sessions/%5Bid%5D/messages/route.ts) (`POST`) with a live implementation: saves the user message, calls `generateMentorResponse`, saves the AI reply, and atomically marks the session `"COMPLETED"` when `sessionComplete` is true.
+- Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
+
+### Mentor session UI
+
+- Created [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx), a client component that renders the full mentor conversation:
+  - Accepts `sessionId`, `initialMessages`, and `isCompleted` props.
+  - Appends an optimistic user message before the API responds, then replaces it with the confirmed server echo on success (or rolls back on error).
+  - Shows an animated "Mentor is typing…" indicator during the `POST /api/mentor-sessions/[id]/messages` request.
+  - On `sessionComplete: true` in the response, hides the input area and renders a locked "Review Complete" state.
+  - Supports `Enter` to submit and `Shift+Enter` for a newline; auto-scrolls to the latest message.
+- Created [vinter-app/components/StartMentorReviewButton.tsx](vinter-app/components/StartMentorReviewButton.tsx), a client component that POSTs to `POST /api/mentor-sessions` with `userProjectId`, extracts `data.sessionId` from the response envelope, and redirects to `/mentor-sessions/[sessionId]`.
+- Rewrote [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx) as a server component:
+  - Queries `MentorSession` (with `messages`, `userProject.project`, `userProject.repository.snapshots`) directly from Prisma.
+  - Two-column layout (`lg:grid-cols-[320px_1fr]`): left sidebar shows project title, role, difficulty badge, repository URL and visibility, and the locked commit SHA; right panel renders `<MentorChat>` with server-fetched initial messages.
+- Updated [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx) with two new status branches:
+  - `SUBMITTED`: shows the locked repo panel and renders `<StartMentorReviewButton>`.
+  - `MENTOR_SESSION`: resolves the active `MentorSession` from Prisma and renders a "Continue Mentor Session" link; falls back to `<StartMentorReviewButton>` if no active session is found.
 - Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
