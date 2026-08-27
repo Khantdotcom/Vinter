@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { ArrowLeft, Check, GitBranch } from "lucide-react";
+import { ArrowLeft, Check, GitBranch, Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authOptions } from "@/lib/auth";
 import { normalizeProject, prisma } from "@/lib/prisma";
+import ConnectRepository from "@/components/ConnectRepository";
+import SubmitProjectButton from "@/components/SubmitProjectButton";
 
 export default async function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -18,6 +20,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     userId
       ? prisma.userProject.findFirst({
           where: { userId: userId, projectId },
+          include: { repository: true },
         })
       : null,
   ]);
@@ -36,6 +39,11 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const normalizedProject = normalizeProject(project);
   const progress = activeUserProject?.projectId === projectId ? activeUserProject.progress ?? 0 : 0;
   const requirements = normalizedProject.requirements ?? [];
+  const status = activeUserProject?.status ?? "ACTIVE";
+  const repository = activeUserProject?.repository ?? null;
+
+  const SUBMITTED_STATES = new Set(["SUBMITTED", "UNDER_REVIEW", "ASSESSED", "COMPLETED"]);
+  const isSubmitted = SUBMITTED_STATES.has(status);
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-10 text-neutral-900">
@@ -58,7 +66,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
             <div className="flex flex-wrap items-center gap-2">
               <Badge>{normalizedProject.category}</Badge>
               <Badge variant="secondary">{normalizedProject.role}</Badge>
-              <Badge variant="success">ACTIVE</Badge>
+              <Badge variant="secondary">{status}</Badge>
             </div>
             <CardTitle className="mt-2 text-2xl">Project overview</CardTitle>
           </CardHeader>
@@ -87,11 +95,62 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
               </ul>
             </div>
 
-            <div className="flex justify-end">
-              <Button variant="outline" disabled className="gap-2 opacity-60">
-                <GitBranch className="h-4 w-4" />
-                Connect GitHub Repository
-              </Button>
+            {/* Repository / submission section */}
+            <div className="rounded-lg border border-neutral-200 p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-neutral-500" />
+                <h2 className="text-base font-semibold">Repository</h2>
+              </div>
+
+              {isSubmitted ? (
+                <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+                  <Lock className="h-4 w-4 text-neutral-500" />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Under Review</p>
+                    {repository && (
+                      <a
+                        href={repository.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                      >
+                        {repository.owner}/{repository.name}
+                      </a>
+                    )}
+                    <p className="mt-0.5 text-xs text-neutral-500">
+                      Repository snapshot captured. Awaiting mentor assessment.
+                    </p>
+                  </div>
+                </div>
+              ) : status === "REPOSITORY_CONNECTED" && repository ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+                    <GitBranch className="h-4 w-4 text-neutral-500" />
+                    <div>
+                      <a
+                        href={repository.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-neutral-900 underline-offset-2 hover:underline"
+                      >
+                        {repository.owner}/{repository.name}
+                      </a>
+                      <p className="text-xs text-neutral-500">
+                        {repository.visibility?.toLowerCase()} · {repository.defaultBranch}
+                      </p>
+                    </div>
+                  </div>
+                  {activeUserProject && (
+                    <SubmitProjectButton userProjectId={activeUserProject.id} />
+                  )}
+                </div>
+              ) : (
+                activeUserProject ? (
+                  <ConnectRepository userProjectId={activeUserProject.id} />
+                ) : (
+                  <p className="text-sm text-neutral-500">Start the project to connect a repository.</p>
+                )
+              )}
             </div>
           </CardContent>
         </Card>
