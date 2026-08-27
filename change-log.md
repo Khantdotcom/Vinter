@@ -78,3 +78,13 @@
   - `REPOSITORY_CONNECTED`: shows connected repo name and URL, renders `<SubmitProjectButton>`
   - `SUBMITTED` and post-submit states: locked "Under Review" panel with repo link
 - Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
+
+### AI Mentor loop (Vercel AI SDK + Google Gemini)
+
+- Installed `ai` and `@ai-sdk/google` packages.
+- Created [vinter-app/lib/mentor.ts](vinter-app/lib/mentor.ts) with two service functions:
+  - `generateMentorReview(userProjectId)`: fetches the project brief and locked repository snapshot from Prisma, prompts `gemini-2.5-flash` to produce an opening technical analysis and a single focused question for the candidate.
+  - `generateMentorResponse(sessionId, userMessage)`: loads the full conversation history from `MentorMessage` records, tracks user turn count, enforces a hard stop after 4 user turns by instructing the model to close with a `SESSION_COMPLETE:` summary on the final turn, and returns `{ text, sessionComplete }`.
+- Created [vinter-app/app/api/mentor-sessions/route.ts](vinter-app/app/api/mentor-sessions/route.ts) (`POST`): requires auth and `userProjectId`, calls `generateMentorReview`, creates the `MentorSession` and opening `MentorMessage`, and updates `UserProject.status` to `"MENTOR_SESSION"` — all in a single Prisma transaction.
+- Replaced the stubbed [vinter-app/app/api/mentor-sessions/[id]/messages/route.ts](vinter-app/app/api/mentor-sessions/%5Bid%5D/messages/route.ts) (`POST`) with a live implementation: saves the user message, calls `generateMentorResponse`, saves the AI reply, and atomically marks the session `"COMPLETED"` when `sessionComplete` is true.
+- Verified with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
