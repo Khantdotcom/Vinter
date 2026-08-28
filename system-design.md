@@ -121,6 +121,7 @@ Prompt constraints implemented in code:
 - Hard cap of 4 user turns (`MAX_USER_TURNS = 4`).
 - Final turn instruction requires response to begin with `SESSION_COMPLETE:`.
 - Runtime completion detection: `sessionComplete = isLastTurn && text.includes("SESSION_COMPLETE:")`.
+- Mentor session supports manual early assessment trigger from the active chat UI, allowing users to end review and generate final assessment before the hard stop.
 
 ### 3.2 Structured final assessment
 
@@ -197,6 +198,23 @@ The legacy `/home` page has been removed. The root route `/` is now the single s
 - If unauthenticated, `/` renders a landing experience with login CTA.
 - If authenticated, `/` renders the dashboard/workspace view.
 
+### 4.6 Completed-state UX behavior
+
+The completed project UX now has explicit pass/fail rendering paths:
+
+- Project overview (`/projects/[projectId]/overview`):
+  - `COMPLETED` + proof: celebratory card and `View Public Proof` CTA to `/proofs/[publicId]`.
+  - `COMPLETED` + no proof: improvement card and `Return to Dashboard` CTA to `/`.
+- Dashboard (`/`):
+  - latest active project query includes `COMPLETED` status and optional `proof` relation.
+  - completed projects show a dedicated next-action panel with:
+    - `View Certificate` when proof exists
+    - `Browse New Challenges` to `/projects`
+    - fallback guidance when proof does not exist.
+- Mentor chat assessment trigger behavior:
+  - assessment generation can be triggered from both the completed lock state and an active-session early-exit action.
+  - while assessment is in progress, chat input and assessment triggers are disabled to avoid duplicate submissions.
+
 ## 5. Core User Flow (State Machine)
 
 The primary lifecycle is modeled through `UserProject.status` transitions:
@@ -222,10 +240,15 @@ Observed transitions from route handlers:
 
 Supporting UI logic:
 
-- `projects/[projectId]/overview` branches rendering based on status (`ACTIVE`, `REPOSITORY_CONNECTED`, submitted/review states, `MENTOR_SESSION`).
-- Mentor chat enforces turn completion and triggers assessment generation at session end.
+- `projects/[projectId]/overview` branches rendering based on status (`ACTIVE`, `REPOSITORY_CONNECTED`, submitted/review states, `MENTOR_SESSION`, `COMPLETED`) with explicit proof/no-proof completion outcomes.
+- Mentor chat enforces turn completion and supports both end-of-session and manual early-exit assessment generation.
 - Proof page is accessible by `publicId` when a passing assessment creates a `Proof`.
 - Proof index route (`/proofs`) lists authenticated user proofs and links to `/proofs/[publicId]`.
+
+Post-assessment routing behavior:
+
+- Pass + proof: route to `/proofs/[publicId]`.
+- Fail or no proof: route to `/` so users land on the dashboard and can continue from updated status.
 
 ### State diagram
 

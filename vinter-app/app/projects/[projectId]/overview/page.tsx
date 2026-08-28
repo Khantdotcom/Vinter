@@ -28,7 +28,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
     userId
       ? prisma.userProject.findFirst({
           where: { userId: userId, projectId },
-          include: { repository: true },
+          include: { repository: true, proof: true },
         })
       : null,
   ]);
@@ -50,7 +50,7 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
   const status = activeUserProject?.status ?? "ACTIVE";
   const repository = activeUserProject?.repository ?? null;
 
-  const SUBMITTED_STATES = new Set(["SUBMITTED", "UNDER_REVIEW", "ASSESSED", "COMPLETED"]);
+  const SUBMITTED_STATES = new Set(["SUBMITTED", "UNDER_REVIEW", "ASSESSED"]);
   const isSubmitted = SUBMITTED_STATES.has(status);
 
   // Resolve active mentor session id for MENTOR_SESSION status
@@ -152,6 +152,38 @@ async function ProjectOverviewPageContent({ projectId }: { projectId: string }) 
                     activeUserProject && <StartMentorReviewButton userProjectId={activeUserProject.id} />
                   )}
                 </div>
+              ) : status === "COMPLETED" ? (
+                activeUserProject?.proof ? (
+                  <div className="space-y-4 rounded-lg border border-neutral-300 bg-neutral-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div>
+                      <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Project Completed</h3>
+                      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                        Congratulations. Your final assessment passed and your public proof is ready.
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="bg-vinter-cyan-light text-black hover:bg-vinter-cyan-light/90 dark:bg-vinter-cyan-dark dark:hover:bg-vinter-cyan-dark/90"
+                    >
+                      <Link href={`/proofs/${activeUserProject.proof.publicId}`}>View Public Proof</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4 rounded-lg border border-neutral-300 bg-neutral-50 p-5 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div>
+                      <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Assessment Completed - Needs Improvement</h3>
+                      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                        Your assessment has finished. Review your feedback on the dashboard and choose your next challenge.
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="bg-vinter-cyan-light text-black hover:bg-vinter-cyan-light/90 dark:bg-vinter-cyan-dark dark:hover:bg-vinter-cyan-dark/90"
+                    >
+                      <Link href="/">Return to Dashboard</Link>
+                    </Button>
+                  </div>
+                )
               ) : isSubmitted ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">

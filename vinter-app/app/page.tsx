@@ -80,6 +80,7 @@ function DashboardView({
     id: string;
     status: string;
     progress: number;
+    proof: { publicId: string } | null;
     project: ReturnType<typeof normalizeProject>;
   } | null;
 }) {
@@ -120,22 +121,52 @@ function DashboardView({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href={getNextAction(activeProject.status, activeProject.project.id).href}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#5CD4DF] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 dark:bg-[#7DE8F2]"
-              >
-                {getNextAction(activeProject.status, activeProject.project.id).label}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href={`/projects/${activeProject.project.id}/overview`}
-                className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900"
-              >
-                Open Workspace
-                <GitBranch className="h-4 w-4" />
-              </Link>
-            </div>
+            {activeProject.status === "COMPLETED" ? (
+              <div className="space-y-3 rounded-lg border border-neutral-300 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                  Assessment cycle complete. Nice work finishing this project.
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  {activeProject.proof ? (
+                    <Link
+                      href={`/proofs/${activeProject.proof.publicId}`}
+                      className="inline-flex items-center gap-2 rounded-lg bg-vinter-cyan-light px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 dark:bg-vinter-cyan-dark"
+                    >
+                      View Certificate
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <span className="text-sm text-neutral-600 dark:text-neutral-300">
+                      This attempt did not generate a certificate. Review feedback and keep improving.
+                    </span>
+                  )}
+                  <Link
+                    href="/projects"
+                    className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900"
+                  >
+                    Browse New Challenges
+                    <GitBranch className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href={getNextAction(activeProject.status, activeProject.project.id).href}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#5CD4DF] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 dark:bg-[#7DE8F2]"
+                >
+                  {getNextAction(activeProject.status, activeProject.project.id).label}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href={`/projects/${activeProject.project.id}/overview`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900"
+                >
+                  Open Workspace
+                  <GitBranch className="h-4 w-4" />
+                </Link>
+              </div>
+            )}
           </div>
         </KineticCard>
       ) : (
@@ -177,11 +208,12 @@ export default async function RootPage() {
         where: {
           userId,
           status: {
-            in: ["ACTIVE", "REPOSITORY_CONNECTED", "SUBMITTED", "MENTOR_SESSION"],
+            in: ["ACTIVE", "REPOSITORY_CONNECTED", "SUBMITTED", "MENTOR_SESSION", "COMPLETED"],
           },
         },
         include: {
           project: true,
+          proof: true,
         },
         orderBy: {
           updatedAt: "desc",
@@ -195,6 +227,7 @@ export default async function RootPage() {
           id: activeUserProject.id,
           status: activeUserProject.status,
           progress: activeUserProject.progress ?? 0,
+          proof: activeUserProject.proof ? { publicId: activeUserProject.proof.publicId } : null,
           project: normalizeProject(activeUserProject.project),
         }
       : null;

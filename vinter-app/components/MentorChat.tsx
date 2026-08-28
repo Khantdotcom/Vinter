@@ -26,12 +26,13 @@ export default function MentorChat({ sessionId, userProjectId, initialMessages, 
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [error, setError] = useState<string | null>(null);
-  const [assessing, setAssessing] = useState(false);
+  const [isAssessing, setIsAssessing] = useState(false);
   const [assessError, setAssessError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   async function handleGenerateAssessment() {
-    setAssessing(true);
+    if (isAssessing) return;
+    setIsAssessing(true);
     setAssessError(null);
     try {
       const res = await fetch(`/api/user-projects/${userProjectId}/assessments`, {
@@ -46,19 +47,19 @@ export default function MentorChat({ sessionId, userProjectId, initialMessages, 
       if (passed && proofPublicId) {
         router.push(`/proofs/${proofPublicId}`);
       } else {
-        router.push(`/user-projects/${userProjectId}`);
+        router.push("/");
       }
     } catch {
       setAssessError("Assessment failed. Please try again.");
     } finally {
-      setAssessing(false);
+      setIsAssessing(false);
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const content = input.trim();
-    if (!content || loading || completed) return;
+    if (!content || loading || completed || isAssessing) return;
 
     // Optimistic user message
     const optimisticId = `optimistic-${Date.now()}`;
@@ -160,10 +161,10 @@ export default function MentorChat({ sessionId, userProjectId, initialMessages, 
           )}
           <Button
             onClick={handleGenerateAssessment}
-            disabled={assessing}
+            disabled={isAssessing}
             className="w-full gap-2"
           >
-            {assessing ? (
+            {isAssessing ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Generating Assessment…
@@ -177,26 +178,39 @@ export default function MentorChat({ sessionId, userProjectId, initialMessages, 
           </Button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex gap-2 border-t border-neutral-200 pt-4">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e as any);
-              }
-            }}
-            placeholder="Type your response…"
-            rows={3}
-            disabled={loading}
-            className="flex-1 resize-none rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 disabled:opacity-50"
-          />
-          <Button type="submit" disabled={loading || !input.trim()} className="self-end gap-2">
-            <Send className="h-4 w-4" />
-            Send
-          </Button>
-        </form>
+        <div className="border-t border-neutral-200 pt-4">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e as any);
+                }
+              }}
+              placeholder="Type your response…"
+              rows={3}
+              disabled={loading || isAssessing}
+              className="flex-1 resize-none rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 disabled:opacity-50"
+            />
+            <Button type="submit" disabled={loading || isAssessing || !input.trim()} className="self-end gap-2">
+              <Send className="h-4 w-4" />
+              Send
+            </Button>
+          </form>
+          <button
+            type="button"
+            onClick={handleGenerateAssessment}
+            disabled={isAssessing}
+            className="mt-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:text-neutral-100"
+          >
+            {isAssessing ? "Generating Assessment..." : "End Review & Generate Assessment"}
+          </button>
+          {assessError && (
+            <p className="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{assessError}</p>
+          )}
+        </div>
       )}
     </div>
   );

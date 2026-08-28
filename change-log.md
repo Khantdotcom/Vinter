@@ -1,5 +1,30 @@
 # Change Log
 
+## 2026-08-28
+
+### Completed-state flow and mentor early-exit assessment
+
+- Updated [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx) to support manual early exit before the 4-turn hard stop:
+  - Added an `End Review & Generate Assessment` trigger in the active chat state.
+  - Reused the same assessment generation handler for both active-state early exit and completed-state finalization.
+  - Added a dedicated assessing state so input controls are disabled while assessment generation is in progress.
+  - Added in-place loading feedback (`Generating Assessment...`) for both assessment triggers.
+- Updated assessment completion routing in [vinter-app/components/MentorChat.tsx](vinter-app/components/MentorChat.tsx):
+  - pass + proof routes to `/proofs/[publicId]`
+  - fail/no proof routes to `/` (Dashboard)
+- Updated [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx):
+  - Added `proof: true` to the `prisma.userProject.findFirst` include.
+  - Added a dedicated `COMPLETED` UI branch:
+    - with proof: celebratory `Project Completed` card + `View Public Proof`
+    - without proof: `Assessment Completed - Needs Improvement` card + `Return to Dashboard`
+  - Removed `COMPLETED` from the submitted/under-review bucket to prevent incorrect locked-state messaging.
+- Updated [vinter-app/app/page.tsx](vinter-app/app/page.tsx) dashboard "Next Action" behavior:
+  - Included `COMPLETED` in the active project query status filter.
+  - Included `proof: true` for null-safe certificate UI handling.
+  - Added completed-state dashboard CTAs:
+    - `View Certificate` when proof exists
+    - `Browse New Challenges` to `/projects` for the next project.
+
 ## 2026-08-27
 
 ### Production prep: Next.js dynamic params and Supabase readiness
@@ -101,7 +126,7 @@
   - Added `userProjectId: string` prop.
   - Replaced the static "Review Complete" locked state with an actionable "Generate Final Assessment" button.
   - Button POSTs to `POST /api/user-projects/[userProjectId]/assessments` and shows a `Loader2` spinner during the AI round-trip.
-  - On success: if `passed && proofPublicId`, routes to `/proofs/[proofPublicId]`; otherwise routes back to the user-project overview.
+  - On success: if `passed && proofPublicId`, routes to `/proofs/[proofPublicId]`; otherwise routes to `/` (Dashboard).
   - Assessment errors are displayed inline without disrupting the conversation view.
 - Updated [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx) to pass the new `userProjectId` prop to `<MentorChat>`.
 - Created [vinter-app/app/proofs/\[publicId\]/page.tsx](vinter-app/app/proofs/%5BpublicId%5D/page.tsx) — a public server component (no auth required):
