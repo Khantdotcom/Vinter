@@ -27,7 +27,7 @@
 
 ## 2026-08-27
 
-### Production prep: Next.js dynamic params and Supabase readiness
+### Production prep: Next.js dynamic params and deployment prep
 
 - Updated dynamic route pages to resolve promise-based params with React `use()` for Next.js 15+ compatibility:
   - [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx)
@@ -36,7 +36,7 @@
   - [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx)
   - [vinter-app/app/proofs/\[publicId\]/page.tsx](vinter-app/app/proofs/%5BpublicId%5D/page.tsx)
 - For server-rendered pages, introduced small wrapper components that call `use(params)` and pass resolved IDs into async content components.
-- Updated [vinter-app/prisma/schema.prisma](vinter-app/prisma/schema.prisma) datasource provider from `sqlite` to `postgresql` for Supabase.
+- Evaluated a Supabase/PostgreSQL deployment path during production prep, but that datasource change is not part of the current workspace state. The live schema remains SQLite-backed.
 - Updated [vinter-app/package.json](vinter-app/package.json) build script to `prisma generate && next build` so Prisma Client is generated during Vercel builds.
 
 ### Brand system and UX voice rollout
@@ -58,7 +58,7 @@
   - cyan glow accents and subtle cyan borders/checkmarks
   - Capriola usage for `Foundation Proof` header and project title
   - emphasized cryptographic evidence panel (`Verified Through: GitHub Repository & Commit SHA`) using a distinct dark-gray, monospace block.
-- Updated user-facing empty-state copy in key UI surfaces to a more human, user-centered tone (for example "Ready to build something real?") across [vinter-app/app/home/page.tsx](vinter-app/app/home/page.tsx), [vinter-app/app/projects/page.tsx](vinter-app/app/projects/page.tsx), [vinter-app/components/ConnectRepository.tsx](vinter-app/components/ConnectRepository.tsx), [vinter-app/app/projects/\[projectId\]/overview/page.tsx](vinter-app/app/projects/%5BprojectId%5D/overview/page.tsx), [vinter-app/app/mentor-sessions/\[id\]/page.tsx](vinter-app/app/mentor-sessions/%5Bid%5D/page.tsx), and [vinter-app/app/user-projects/\[id\]/page.tsx](vinter-app/app/user-projects/%5Bid%5D/page.tsx).
+- Updated user-facing empty-state copy in key UI surfaces to a more human, user-centered tone (for example "Ready to build something real?") across the project listing page, repository connection flow, project overview, mentor session view, and user project view. The earlier `app/home/page.tsx` copy pass belonged to the pre-consolidation route structure and that page has since been removed.
 
 ### Foundational theme switching and layout system
 
@@ -223,7 +223,7 @@
 ### GitHub OAuth sign-in fix
 
 - Removed the custom `pages.signIn` override in [vinter-app/lib/auth.ts](vinter-app/lib/auth.ts) so NextAuth uses its default sign-in flow and no longer masks the underlying GitHub OAuth failure state.
-- Updated the landing page GitHub button in [vinter-app/app/page.tsx](vinter-app/app/page.tsx) to be a client component and call `signIn("github", { callbackUrl: "/home" })` directly using `next-auth/react`.
+- Updated the landing page GitHub sign-in flow to use a direct `signIn("github", { callbackUrl: "/" })` client-side invocation so OAuth returns to the canonical root entrypoint instead of the removed `/home` route.
 - This addresses the immediate CSRF/client-side invocation issue that was redirecting to `/?error=github` before the OAuth exchange could complete.
 - Verified the fix with `cd /Users/khant.h/Vinter_V1/vinter-app && npm run build`.
 

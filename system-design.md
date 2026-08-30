@@ -9,8 +9,8 @@ Vinter is implemented as a Next.js App Router application in `vinter-app` with a
 - Styling: Tailwind CSS v4 with global CSS variables and custom brand tokens.
 - Theme runtime: `next-themes` with class-based light/dark/system switching.
 - Auth: NextAuth v4 (`next-auth@4.24.15`) with GitHub OAuth provider and JWT-based sessions.
-- Data access: Prisma ORM (`@prisma/client@5.22.0`) with datasource provider set to `postgresql` in `prisma/schema.prisma`.
-- Database target: PostgreSQL (intended for Supabase deployment).
+- Data access: Prisma ORM (`@prisma/client@5.22.0`) with datasource provider currently set to `sqlite` in `prisma/schema.prisma`.
+- Database target: SQLite for the current app/runtime, with room for a later PostgreSQL/Supabase migration if deployment requirements change.
 - AI layer: Vercel AI SDK (`ai`) + Google provider (`@ai-sdk/google`) using Gemini `gemini-3.6-flash`.
 - Validation/schema typing for AI output: Zod (`zod`).
 
@@ -268,5 +268,5 @@ stateDiagram-v2
 
 - The codebase is mid-transition from mock-domain endpoints (`lib/domain.ts`) to full Prisma-backed endpoints.
 - `prisma/seed.ts` currently seeds only one foundation project (`Authentication API`). The additional catalog items (Product Catalog API, GitHub Repository Explorer, RAG Document Assistant) are not present in current seed code.
-- Some older changelog entries still mention SQLite-era details; current schema provider is PostgreSQL.
+- The persistence layer is currently SQLite-backed, and several code paths still depend on JSON serialized into string fields for compatibility.
 - Historical docs/changelog entries may still reference `/home`; current canonical entry route is `/`.
