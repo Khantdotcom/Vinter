@@ -64,7 +64,7 @@
 
 - Installed and wired `next-themes` for functional light/dark/system switching.
 - Added [vinter-app/components/ThemeProvider.tsx](vinter-app/components/ThemeProvider.tsx) and wrapped the app tree in [vinter-app/app/layout.tsx](vinter-app/app/layout.tsx) using class-based theming (`attribute="class"`, `defaultTheme="system"`, `enableSystem`).
-- Added [vinter-app/components/ThemeToggle.tsx](vinter-app/components/ThemeToggle.tsx) with Sun/Moon icons and click-to-cycle behavior (`light` -> `dark` -> `system`).
+- Added [vinter-app/components/ThemeToggle.tsx](vinter-app/components/ThemeToggle.tsx) with Sun/Moon icons and click-to-cycle behavior (`light` -&gt; `dark` -&gt; `system`).
 - Added persistent [vinter-app/components/Navbar.tsx](vinter-app/components/Navbar.tsx) with:
   - `Vinter` wordmark using Capriola (`font-brand`)
   - theme toggle control
@@ -78,8 +78,7 @@
 - Extended shared UI primitives for cross-page consistency:
   - [vinter-app/components/ui/button.tsx](vinter-app/components/ui/button.tsx)
   - [vinter-app/components/ui/card.tsx](vinter-app/components/ui/card.tsx)
-  - [vinter-app/components/ui/badge.tsx](vinter-app/components/ui/badge.tsx)
-  with functional dark-mode classes, subtle borders, and brand cyan accent behavior.
+  - [vinter-app/components/ui/badge.tsx](vinter-app/components/ui/badge.tsx)with functional dark-mode classes, subtle borders, and brand cyan accent behavior.
 - Applied structural dark-mode readability across remaining primary pages:
   - [vinter-app/app/page.tsx](vinter-app/app/page.tsx)
   - [vinter-app/app/projects/\[projectId\]/page.tsx](vinter-app/app/projects/%5BprojectId%5D/page.tsx)
